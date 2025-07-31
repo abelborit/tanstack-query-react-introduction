@@ -1,35 +1,57 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import "./App.css";
+
+/* random number api -> https://www.random.org/integers/?num=1&min=1&max=500&col=1&base=10&format=plain&rnd=new */
+const RANDOM_NUMBER_API =
+  "https://www.random.org/integers/?num=1&min=1&max=500&col=1&base=10&format=plain&rnd=new";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [value, setValue] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [refreshRequest, setRefreshRequest] = useState(0);
+
+  useEffect(() => {
+    setIsLoading(true);
+
+    fetch(RANDOM_NUMBER_API)
+      .then((response) => {
+        return response.json();
+      })
+      .then((data) => {
+        setValue(data);
+        setError("");
+      })
+      .catch((error) => {
+        setValue(0);
+        setError(error);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [refreshRequest]);
+
+  const handleRefreshRequest = () => {
+    setRefreshRequest((prevState) => prevState + 1);
+  };
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      {isLoading ? <h1>Cargando...</h1> : <h1>Número: {value}</h1>}
+
+      {error ? (
+        <>
+          <br />
+          <div>{error}</div>
+          <br />
+        </>
+      ) : null}
+
+      <button onClick={handleRefreshRequest} disabled={isLoading}>
+        Nuevo número
+      </button>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
